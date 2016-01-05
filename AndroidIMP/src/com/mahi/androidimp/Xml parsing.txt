@@ -1,0 +1,75 @@
+
+
+//declare variable
+
+XMLParser parser = new XMLParser();
+ String xml = "";
+ NodeList nl;
+ Document doc;
+ String MERCHANT_LIST_URL = "http://pfh.com.my/pgfh/merchantlist.php";
+ private ProgressDialog mProgressDialog;
+ public static final int DIALOG_DOWNLOAD_PROGRESS1 = 1;
+
+
+// display progress bar
+
+protected Dialog onCreateDialog(int id) {
+		switch (id) {
+		case DIALOG_DOWNLOAD_PROGRESS1:
+			mProgressDialog = new ProgressDialog(this);
+			mProgressDialog.setMessage("Processing request, Please wait ...");
+			mProgressDialog.setCancelable(false);
+			mProgressDialog.show();
+			return mProgressDialog;
+
+		default:
+			return null;
+		}
+	}
+
+
+//Asyn task with xml parsing
+
+	class myTask_fetch_merchant_call extends AsyncTask<String, Void, String> {
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			onCreateDialog(DIALOG_DOWNLOAD_PROGRESS1);
+		}
+
+		protected String doInBackground(String... aurl) {
+			try {
+
+				xml = parser.getXmlFromUrl(MERCHANT_LIST_URL);
+				doc = parser.getDomElement(xml); // getting
+				if (doc != null) {
+					nl = doc.getElementsByTagName("merchant");
+					merchantList.clear();
+					// looping through all item nodes <item>
+					for (int i = 0; i < nl.getLength(); i++) {
+						Element e = (Element) nl.item(i);
+						MerchantVO mvo = new MerchantVO();
+						mvo.merchantid = parser.getValue(e, "merchantid");
+						mvo.merchantname = parser.getValue(e, "merchantname");
+						mvo.merchantdescription = parser.getValue(e,
+								"merchantdescription");
+						merchantList.add(mvo);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return "";
+		}
+
+		protected void onPostExecute(String str_resp) {
+			try {
+				currentFeedList = merchantList;
+				fillUI();
+				if (mProgressDialog != null)
+					mProgressDialog.dismiss();
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
+		}

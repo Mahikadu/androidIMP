@@ -1,0 +1,110 @@
+//Variable declare
+
+public static final int DIALOG_DOWNLOAD_PROGRESS1 = 1;
+private ProgressDialog mProgressDialog;
+String responseString = "";
+
+
+//display progress dialog
+protected Dialog onCreateDialog(int id) {
+		switch (id) {
+		case DIALOG_DOWNLOAD_PROGRESS1:
+			mProgressDialog = new ProgressDialog(this);
+			mProgressDialog.setMessage("Processing request, Please wait ...");
+			mProgressDialog.setCancelable(false);
+			mProgressDialog.show();
+
+			return mProgressDialog;
+
+		default:
+			return null;
+		}
+	}
+
+
+// JSON AsyncTask for saveUserDetails upload
+	class myTask_saveUserDetails_call extends AsyncTask<Void, Void, Void> {
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			onCreateDialog(DIALOG_DOWNLOAD_PROGRESS1);
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			String gender = "";
+			if (male.isChecked())
+				gender = "Male";
+			else
+				gender = "Female";
+
+			ArrayList<NameValuePair> nameValuePair = new ArrayList<NameValuePair>();
+
+			nameValuePair.add(new BasicNameValuePair("username", name.getText()
+					.toString()));
+			nameValuePair.add(new BasicNameValuePair("dateofbirth", dob
+					.getText().toString()));
+			nameValuePair.add(new BasicNameValuePair("gender", gender));
+			nameValuePair.add(new BasicNameValuePair("email", email.getText()
+					.toString()));
+			nameValuePair.add(new BasicNameValuePair("currentweight",
+					currentwgt.getText().toString()));
+			nameValuePair.add(new BasicNameValuePair("goalweight", goalwgt
+					.getText().toString()));
+			nameValuePair.add(new BasicNameValuePair("devicetype","Android"));
+			nameValuePair.add(new BasicNameValuePair("deviceid",RegisterScreen.GCMRegister_Id));
+			
+//			nameValuePair.add(new BasicNameValuePair("devicetype", devicetype));
+
+
+			try {
+
+				// Defined URL where to send data
+				HttpClient httpclient = new DefaultHttpClient();
+				HttpPost httppost = new HttpPost(
+						"http://millionairesorg.com/fanweighin/registeruser.php");
+				httppost.setHeader("Content-Type",
+						"application/x-www-form-urlencoded;");
+				httppost.setEntity(new UrlEncodedFormEntity(nameValuePair,
+						"UTF-8"));
+				HttpResponse response = httpclient.execute(httppost);
+				responseString = EntityUtils.toString(response.getEntity());
+				System.out.println(responseString + "response is display");
+
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			return null;
+
+		}
+
+		@Override
+		protected void onPostExecute(Void args) {
+
+			final AlertDialog alertDialog = new AlertDialog.Builder(
+					RegisterScreen.this).create();
+			alertDialog.setMessage("Your Details are saved successfully");
+			alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					Intent logIntent = new Intent(getApplicationContext(),
+							HomeScreen.class);
+					startActivity(logIntent);
+					alertDialog.dismiss();
+				}
+			});
+			alertDialog.show();
+
+			sharedPreferences = getSharedPreferences("userdetails",
+					MODE_PRIVATE);
+			SharedPreferences.Editor editor = sharedPreferences.edit();
+			editor.putString("userid", responseString);
+			editor.putString("username", name.getText().toString());
+			editor.putString("currentwt", currentwgt.getText().toString());
+			editor.putString("goalwt", goalwgt.getText().toString());
+
+			editor.commit();
+
+		}
+
+	}
