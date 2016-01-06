@@ -1,0 +1,54 @@
+public class ListArrayAdapterFeed extends ArrayAdapter<FeedVO> {
+	private final Context context;
+	private final ArrayList<FeedVO> values;
+	public static AlertDialog.Builder builderSingle;
+
+	public  ListArrayAdapterFeed(Context context,
+			ArrayList<FeedVO> values) {
+		super(context, R.layout.listview_item_row, values);
+		this.context = context;
+		this.values = values;
+	}
+
+	public void closeDialogue() {
+
+	}
+
+	public View getView(int position, View convertView, ViewGroup parent) {
+		LayoutInflater inflater = (LayoutInflater) context
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View rowView = inflater.inflate(R.layout.listview_item_row, parent,
+				false);
+		Typeface font_bold = Typeface.createFromAsset(context.getAssets(),
+				"GothamNarrow-Black.otf");
+		Typeface font = Typeface.createFromAsset(context.getAssets(),
+				"GothamNarrow-Light.otf");
+
+		FeedVO fVo = values.get(position);
+		TextView textView1 = (TextView) rowView.findViewById(R.id.secondLine);
+		TextView textView2 = (TextView) rowView.findViewById(R.id.thirdline);
+		textView2.setTypeface(font_bold);
+		TextView timelineView2 = (TextView) rowView.findViewById(R.id.timeline);
+		timelineView2.setTypeface(font_bold);
+		timelineView2.setTextSize(10);
+		NormalSmartImageView imageView = (NormalSmartImageView) rowView
+				.findViewById(R.id.icon);
+		
+		 
+			timelineView2.setText(fVo.time);
+			textView1.setText(fVo.feeddescription);
+			textView2.setText(fVo.feedtext);
+			
+			textView1.setTextSize(10);
+
+			if (position == 3) {
+				textView2.setText(fVo.feedtext);
+
+			} 
+			imageView.setImageUrl(fVo.feedimage);
+		
+		// change the icon for Windows and iPhone
+		return rowView;
+	}
+
+}

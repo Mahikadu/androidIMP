@@ -1,0 +1,164 @@
+// DownloadJSON AsyncTask for Activity_details
+	class myTask_activityDetails_call extends AsyncTask<Void, Void, Void> {
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			onCreateDialog(DIALOG_DOWNLOAD_PROGRESS1);
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			HttpClient httpclient = new DefaultHttpClient();
+			HttpResponse response;
+
+			try {
+
+				response = httpclient.execute(new HttpGet(
+						"http://millionairesorg.com/communication/ActivityDetail.php?userid="
+								+ LoginActivity.userid));
+				StatusLine statusLine = response.getStatusLine();
+
+				if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					response.getEntity().writeTo(out);
+					responseString = out.toString();
+
+					out.close();
+
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			return null;
+
+		}
+
+		@Override
+		protected void onPostExecute(Void args) {
+			try {
+				JSONObject jso = new JSONObject(responseString);
+				JSONArray activityArray = null;
+				try {
+					activityArray = jso.getJSONObject("activitydetail")
+							.getJSONArray("activity");
+
+				} catch (Exception e) {
+					// TODO: handle exception
+					activityArray = new JSONArray();
+					activityArray.put(jso.getJSONObject("activitydetail")
+							.getJSONObject("activity"));
+				}
+
+				for (int i = 0; i < activityArray.length(); i++) {
+
+					JSONObject activityObject = (JSONObject) activityArray
+							.get(i);
+					ActivityVO aVo = new ActivityVO();
+					if (!activityObject.isNull("activitytype"))
+						aVo.activitytype = activityObject
+								.getString("activitytype");
+					if (!activityObject.isNull("firstinformation"))
+						aVo.firstinformation = activityObject
+								.getString("firstinformation");
+					if (!activityObject.isNull("secondinformation"))
+						aVo.secondinformation = activityObject
+								.getString("secondinformation");
+					if (!activityObject.isNull("date"))
+						aVo.date = activityObject.getString("date");
+					activitylist.add(aVo);
+
+				}
+				final ListArrayAdapterActivity adapter = new ListArrayAdapterActivity(
+						HomeActivity.this, activitylist);
+				listview.setAdapter(adapter);
+				
+				
+				
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				if (mProgressDialog != null)
+					mProgressDialog.dismiss();
+				new myTask_homepagedetails_call().execute();
+			}
+
+		}
+
+	}
+
+	class myTask_homepagedetails_call extends AsyncTask<Void, Void, Void> {
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			onCreateDialog(DIALOG_DOWNLOAD_PROGRESS1);
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			HttpClient httpclient = new DefaultHttpClient();
+			HttpResponse response;
+
+			try {
+
+				response = httpclient.execute(new HttpGet(
+						"http://millionairesorg.com/communication/HomepageDetail.php?userid="
+								+ LoginActivity.userid));
+				StatusLine statusLine = response.getStatusLine();
+
+				if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					response.getEntity().writeTo(out);
+					responseString = out.toString();
+
+					out.close();
+
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			return null;
+
+		}
+
+		@Override
+		protected void onPostExecute(Void args) {
+			try {
+				JSONObject jso = new JSONObject(responseString);
+				JSONObject jso_data = jso.getJSONObject("homepagedetails")
+						.getJSONObject("homepage");
+
+				if (!jso_data.isNull("messages"))
+					msg.setText(jso_data.getString("messages") + "\n"
+							+ "NEW MESSAGES");
+				if (!jso_data.isNull("survey"))
+					survey.setText(jso_data.getString("survey") + "\n"
+							+ "NEW SURVEYS");
+				if (!jso_data.isNull("events"))
+					events.setText(jso_data.getString("events") + "\n"
+							+ "Events Today");
+				if (!jso_data.isNull("username")) {
+					username = jso_data.getString("username");
+					menuTextView
+							.setText("Hi " + jso_data.getString("username"));
+				}
+				if (!jso_data.isNull("userimage")) {
+					userimage = jso_data.getString("userimage").replace("\\/",
+							"/");
+				}
+				userImage = (NormalSmartImageView) findViewById(R.id.icon);
+				userImage.setImageUrl(userimage);
+				userName = (TextView) findViewById(R.id.homeusername);
+				userName.setText(username);
+				if (mProgressDialog != null)
+					mProgressDialog.dismiss();
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				if (mProgressDialog != null)
+					mProgressDialog.dismiss();
+			}
+
+		}
+	}
